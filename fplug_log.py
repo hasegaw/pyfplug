@@ -19,6 +19,7 @@ fdev.led_off()
     
 def print_now_data():
     print "{time},{temperature},{humidity},{illuminance},{power}".format(time = time.time(), **fdev.get_data_dict())
+    sys.stdout.flush()
 
 
 def main():
