@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+F-Plug Logger
+
+Copyright (C) 2014 SUNAGA Takahiro
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
+"""
 
 import pyfplug
 import sys

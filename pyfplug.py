@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-F-Plug library
+pyFPlug - F-Plug library for Python
 
-Copyright (C) SUNAGA Takahiro 2014
+Copyright (C) 2014 SUNAGA Takahiro
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
 
 """
 

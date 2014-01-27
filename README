@@ -1,0 +1,28 @@
+
+====== PyFPlug ======
+このソフトウェアは、富士通BSC製のF-PLUG (http://www.bsc.fujitsu.com/services/f-plug/) を
+Pythonから操作するライブラリです。
+
+===== Licence =====
+  * Copyright (c) 2014 SUNAGA Takahiro
+  * This software is released under the MIT License, see LICENSE.
+
+===== 使用方法と注意 =====
+  * 十分に注意し自己責任で使用してください。
+    * (実装していませんが) どうやらファームウェア更新のコマンドなどもあるらしく使用できなくなる可能性もあるようです
+  * pySerial が必要です。
+    * Debian 7の場合、「apt-get install python-serial」でインストールできます
+  * 事前にF-Plugとペアリングさせ、/dev/rfcommX が使用可能な状態になっていることが必要です。
+
+  * ...(すいません詳細はソースを参照してください)
+
+===== 動作環境 =====
+動作確認した環境は以下のとおりです。
+
+  * Debian 7
+  * Python 2.7.3
+
+===== 参考 =====
+  * F-PLUG - http://www.bsc.fujitsu.com/services/f-plug/
+  * F-PLUG メッセージ一覧 - http://www.bsc.fujitsu.com/services/f-plug/downloads/message.html
+
