@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 F-Plug library
@@ -35,7 +36,7 @@ def struct_num_values(fmt):
 
 class FPlugDevice:
     
-    def __init__(self, port, timeout = 10, debug =~ False):
+    def __init__(self, port, timeout = 10, debug = False):
         self.port = port
         self.sfile = serial.Serial(self.port, 9600, timeout = timeout)
         self.tid = 100
@@ -138,11 +139,13 @@ class FPlugDevice:
             raise UnknownState("ESV={0}".format(esv))
         
     
-    def get_prop_value(self, prop_class_code, value_format = 'h', remain_size = None):
+    def get_prop_value(self, prop_class_code, epc1, pdc1, value_format = 'h', remain_size = None):
         self.send_command(
-            "10 81 tid:H 0E F0 00 00 prop_class_code:B 00 62 01 E0 00",
+            "10 81 tid:H 0E F0 00 00 prop_class_code:B 00 62 01 epc1:B pdc1:B",
             tid = self.tid,
-            prop_class_code = prop_class_code
+            prop_class_code = prop_class_code,
+            epc1 = epc1,
+            pdc1 = pdc1
         )
         esv = self.read_byte(10)
         if esv == 0x72:
@@ -159,40 +162,45 @@ class FPlugDevice:
             raise UnknownState("ESV = {0}".format(esv))
         
     
-    def get_tempature(self):
+    def get_temperature(self):
         """
             (2.3 Get temperature)
             Returns: temp in degree(float) or None (failure)
         """
-        pval = self.get_prop_value(0x11)
+        pval = self.get_prop_value(0x11, epc1 = 0xE0, pdc1 = 0x00)
         return float(pval) / 10.0 if pval else None
         
-    def get_humadity(self):
+    def get_humidity(self):
         """
-            (2.6 Get humadity)
-            Returns: humadity % or None (failure)
+            (2.6 Get humidity)
+            Returns: humidity % or None (failure)
         """
-        return self.get_prop_value(0x12)
+        return self.get_prop_value(0x12, epc1 = 0xE0, pdc1 = 0x00)
         
     def get_illuminance(self):
         """
             (2.9 Get illuminance)
             Returns: illuminance or None (failure)
         """
-        return self.get_prop_value(0x0D)
+        return self.get_prop_value(0x0D, epc1 = 0xE0, pdc1 = 0x00)
 
     def get_power_realtime(self):
         """
-            (2.9 Get power real-time)
+            (2.12 Get power real-time)
             Returns: power or None (failure)
         """
-        # BUG in FPLUG?: 2 byte of 0x00 remains
-        pval = self.get_prop_value(0x22, remain_size = 2)
+        pval = self.get_prop_value(0x22, epc1 = 0xE2, pdc1 = 0x02)
         
         return float(pval) / 10.0 if pval else None
     
 
-
+    def get_data_dict(self):
+        return {
+            'temperature': self.get_temperature(),
+            'humidity': self.get_humidity(),
+            'illuminance': self.get_illuminance(),
+            'power': self.get_power_realtime(),
+        }
 
     def get_prop_histry24(self, req_kind, dt, struct, vfunc):
         self.send_command(
@@ -292,8 +300,9 @@ class FPlugDevice:
         
 
 def test_fplug_dev():
-    dev = FPlugDevice('/dev/rfcomm0', debug = False)
+    dev = FPlugDevice('/dev/rfcomm0', debug = True)
     # print "init:", dev.plug_init()
+    
 
     print "on:", dev.led_on()
     time.sleep(0.5)
@@ -301,8 +310,8 @@ def test_fplug_dev():
 
     print "set_datetime:", dev.set_datetime()
     
-    print "TMP:", dev.get_tempature(), "degree C"
-    print "HUM:", dev.get_humadity(), "%"
+    print "TMP:", dev.get_temperature(), "degree C"
+    print "HUM:", dev.get_humidity(), "%"
     print "ILL:", dev.get_illuminance(), ""
     print "PWR:", dev.get_power_realtime(), "W"
     
