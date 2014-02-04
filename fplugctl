@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+fplugctl - F-Plug Command line tool
+
+Copyright (C) 2014 SUNAGA Takahiro
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
+
+"""
+
+import sys
+from pyfplug import *
+
+DEFAULT_DEVICE = "/dev/rfcomm0"
+
+
+if len(sys.argv) == 1 or sys.argv[1] == '-h' or sys.argv[1] == '--help':
+    print """fplugctl - F-Plug Command line tool
+Usage: 
+    fplugctl [-d /dev/rfcommX] <command>
+    command: 
+        init                Initialize device
+        settime             Set F-PLUG device time to host time
+        led on              LED on
+        led off             LED off
+        get temperature     Print temperature (degree C)
+        get humidity        Print humidity (%)
+        get illuminance     Print illuminance
+        get power           Print power (W)
+        get acc             Print accumulated power
+    """
+    sys.exit(1)
+
+
+if sys.argv[1] == '-d':
+    dev_fn = sys.argv[2]
+    cmd = sys.argv[3:]
+else:
+    dev_fn = DEFAULT_DEVICE
+    cmd = sys.argv[1:]
+    
+dev = FPlugDevice(dev_fn, debug = False)
+
+if cmd[0] == 'init':
+    dev.plug_init()
+elif cmd[0] == 'led':
+    if cmd[1] == 'on':
+        dev.led_on()
+    else:
+        dev.led_off()
+
+elif cmd[0] == 'settime':
+    print dev.set_datetime()
+
+elif cmd[0] == 'get':
+    if cmd[1].startswith('t'):
+        print dev.get_temperature()
+    elif cmd[1].startswith('h'):
+        print dev.get_humidity()
+    elif cmd[1].startswith('i'):
+        print dev.get_illuminance()
+    elif cmd[1].startswith('p'):
+        print dev.get_power_realtime()
+    
+    elif cmd[1].startswith('a'):
+        result = dev.get_acc_power()
+        if len(cmd) > 2:
+            result = result[int(cmd[2])]
+            print result
+        else:
+            print result
+
+

@@ -300,7 +300,9 @@ class FPlugDevice:
             return False
         else:
             raise UnknownState()
-        
+    
+    def clear(self):
+        self.sfile.flush()
 
 def test_fplug_dev():
     dev = FPlugDevice('/dev/rfcomm0', debug = True)

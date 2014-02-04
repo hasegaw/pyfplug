@@ -34,7 +34,12 @@ def main():
     assert duration >= 1.0
     next_time = time.time()
     while True:
-        print_now_data()
+        try:
+            print_now_data()
+        except UnknownState:
+            time.sleep(duration)
+            fdev.clear()
+            next_time = next_time + duration
         next_time = next_time + duration
         if next_time - time.time() < 0:
             print >>sys.stderr,  "Error: Too short duration"
