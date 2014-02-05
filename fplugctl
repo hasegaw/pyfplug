@@ -58,7 +58,7 @@ elif cmd[0] == 'settime':
 
 elif cmd[0] == 'get':
     if cmd[1].startswith('a'):
-        result = dev.get_acc_power()
+        result = list(reversed(dev.get_acc_power()))
         if len(cmd) > 2:
             result = result[int(cmd[2])]
             print result
