@@ -21,16 +21,17 @@ if len(sys.argv) == 1 or sys.argv[1] == '-h' or sys.argv[1] == '--help':
     print """fplugctl - F-Plug Command line tool
 Usage: 
     fplugctl [-d /dev/rfcommX] <command>
-    command: 
+    Command: 
         init                Initialize device
         settime             Set F-PLUG device time to host time
         led on              LED on
         led off             LED off
-        get temperature     Print temperature (degree C)
-        get humidity        Print humidity (%)
-        get illuminance     Print illuminance
-        get power           Print power (W)
         get acc             Print accumulated power
+        get <key1> ...
+            temperature     Print temperature (degree C)
+            humidity        Print humidity (%)
+            illuminance     Print illuminance
+            power           Print power (W)
     """
     sys.exit(1)
 
@@ -56,21 +57,24 @@ elif cmd[0] == 'settime':
     print dev.set_datetime()
 
 elif cmd[0] == 'get':
-    if cmd[1].startswith('t'):
-        print dev.get_temperature()
-    elif cmd[1].startswith('h'):
-        print dev.get_humidity()
-    elif cmd[1].startswith('i'):
-        print dev.get_illuminance()
-    elif cmd[1].startswith('p'):
-        print dev.get_power_realtime()
-    
-    elif cmd[1].startswith('a'):
+    if cmd[1].startswith('a'):
         result = dev.get_acc_power()
         if len(cmd) > 2:
             result = result[int(cmd[2])]
             print result
         else:
-            print result
-
-
+            print ' '.join(result)
+    else:
+        print ' '.join(
+            map(
+                lambda key: str((
+                    {
+                        't': dev.get_temperature,
+                        'h': dev.get_humidity,
+                        'i': dev.get_illuminance,
+                        'p': dev.get_power_realtime
+                    }.get(key[0], lambda:'Error'))()),
+                cmd[1:]
+            )
+        )
+    

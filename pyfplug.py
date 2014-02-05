@@ -35,13 +35,24 @@ def struct_num_values(fmt):
     sz = calcsize(fmt)
     return len(unpack(fmt, "\0" * sz))
 
-    
 
 class FPlugDevice:
     
-    def __init__(self, port, timeout = 10, debug = False):
+    def __init__(self, port, timeout = 10, debug = False, ntry = 3, retry_wait = 1):
+        assert 0 < ntry < 10
         self.port = port
-        self.sfile = serial.Serial(self.port, 9600, timeout = timeout)
+        
+        last_error = None
+        for i in range(ntry):
+            try:
+                self.sfile = serial.Serial(self.port, 9600, timeout = timeout)
+                break
+            except serial.serialutil.SerialException, e:
+                last_error = e
+            time.sleep(retry_wait)
+        if last_error:
+            raise last_error
+            
         self.tid = 100
         self.debug = debug
         self.sfile.sendBreak(1.0)
