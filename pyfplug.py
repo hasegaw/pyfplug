@@ -38,7 +38,7 @@ def struct_num_values(fmt):
 
 class FPlugDevice:
     
-    def __init__(self, port, timeout = 10, debug = False, ntry = 3, retry_wait = 1):
+    def __init__(self, port, timeout = 10, debug = False, ntry = 4, retry_wait = 2):
         assert 0 < ntry < 10
         self.port = port
         
