@@ -1,0 +1,19 @@
+# FPDC Configuration file
+
+# FPDC Directory
+FPDC_DIR=`pwd`
+
+# 'fplugctl' file abspath
+FCTL="$FPDC_DIR/../fplugctl"
+
+# File path to store current values
+CURRENT_VALUES_FILE="$FPDC_DIR/current-values.txt"
+
+# Logging accumulated power values
+LOG_ENABLED=1
+
+# File path to store accumulated power values
+# <MONTH> will be replaced with 'YYYY-MM'
+LOG_FILE="$FPDC_DIR/data-<MONTH>.log"
+
+

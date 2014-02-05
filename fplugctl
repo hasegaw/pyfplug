@@ -63,7 +63,7 @@ elif cmd[0] == 'get':
             result = result[int(cmd[2])]
             print result
         else:
-            print ' '.join(result)
+            print ' '.join(str(v) for v in result)
     else:
         print ' '.join(
             map(
