@@ -1,26 +1,60 @@
 
 ====== PyFPlug ======
 このソフトウェアは、富士通BSC製のF-PLUG (http://www.bsc.fujitsu.com/services/f-plug/) を
-Pythonから操作するライブラリです。
+Pythonから操作するツールとライブラリです。
 
-===== Licence =====
+====== Licence ======
   * Copyright (c) 2014 SUNAGA Takahiro
   * This software is released under the MIT License, see LICENSE.
 
-===== 使用方法と注意 =====
+====== 使用方法と注意 ======
   * 十分に注意し自己責任で使用してください。
     * (実装していませんが) どうやらファームウェア更新のコマンドなどもあるらしく使用できなくなる可能性もあるようです
   * pySerial が必要です。
     * Debian 7の場合、「apt-get install python-serial」でインストールできます
   * 事前にF-Plugとペアリングさせ、/dev/rfcommX が使用可能な状態になっていることが必要です。
 
-  * ...(すいません詳細はソースを参照してください)
-
 ===== 動作環境 =====
 動作確認した環境は以下のとおりです。
 
   * Debian 7
   * Python 2.7.3
+
+====== マニュアル ======
+  * ここには簡単なマニュアルのみ記述します
+  * 詳細はソースを参照してください
+
+===== pyfplug.py - Python module =====
+  * PythonからF-PLUGを操作するためのモジュールです
+  * 使用例:
+    import pyfplug
+    dev = pyfplug.FPlugDevice('/dev/rfcomm0')
+    print dev.get_temperature()     # 現在の温度を取得
+    print dev.get_power_realtime()  # 現在の消費電力値を取得
+    dev.led_on()                    # LEDを点灯
+    dev.led_off()                   # LEDを消灯
+
+===== fplugctl - CLI Tool =====
+  * コマンドラインからF-PLUGを操作するためのツールです
+
+    fplugctl [-d /dev/rfcommX] <コマンド>
+    コマンド: 
+        init                デバイスの初期化
+        settime             F-PLUGのデバイス時間をホスト時間へ合わせる
+        led on              LED 点灯
+        led off             LED 消灯
+        get acc [n]         積算消費電力値を取得 (nを指定するとn時間前の値を取得)
+        get <key1> ...      各種現在値を表示
+            temperature     温度 (℃)
+            humidity        湿度 (％)
+            illuminance     照度
+            power           消費電力値 (W)
+
+===== fpdc - 定期的な値取得のためのツール =====
+  * 積算電力値を取得するツールです
+  * fpdc_config.conf を作成して使用します
+  * cronなどで1分おきにfpdc_collect.shを実行することで、一時間おきの値ログと、一分ごとに現在値を保存しておくことができます
+  * 現在値を保存し、fpdc_getval.shで値を得ることで、多数からの参照時にアクセスの競合を起こさず値が得られます
 
 ===== 参考 =====
   * F-PLUG - http://www.bsc.fujitsu.com/services/f-plug/

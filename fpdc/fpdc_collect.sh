@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Usage example:
+# crontab:
+#   * * * * *   /path/to/fpdc/fpdc_collect.sh
+
+
 cd `dirname $0`
 source fpdc_config.conf
 
