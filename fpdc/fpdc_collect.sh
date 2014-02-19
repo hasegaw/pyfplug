@@ -38,13 +38,9 @@ fi
 LOGFN_DATE=`date "+%Y-%m"`
 LOGFN="${LOG_FILE/<MONTH>/$LOGFN_DATE}"
 LOGDATE=`date +%d,%H,%H:%M:%S`
-DATA=`$FCTL get acc 0`
-LINE="$LOGDATE,$DATA"
 
-echo "$LINE" >> "$LOGFN"
-
-# for test
 DATA=`$FCTL get acc`
+DATA="${DATA// /,}"
 LINE="$LOGDATE,$DATA"
-echo "$LINE" >> ${LOGFN}.test
+echo "$LINE" >> "$LOGFN"
 
