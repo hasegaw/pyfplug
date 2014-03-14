@@ -130,7 +130,7 @@ class FPlugDevice:
                     raise e
                 ntry -= 1
                 time.sleep(0.5)
-    
+
     def plug_init(self):
         """ (1.1 Plug Initialize Request) """
         now = datetime.datetime.now()
