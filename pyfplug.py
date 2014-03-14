@@ -120,8 +120,16 @@ class FPlugDevice:
         if self.debug:
             print "packing:", (fmt, data)
             print "sending:", hexdump_str(sending_data)
-        self.sfile.write(sending_data)
-
+        ntry = 20
+        while True:
+            try:
+                self.sfile.write(sending_data)
+                break
+            except serial.serialutil.SerialException, e:
+                if ntry <= 0:
+                    raise e
+                ntry -= 1
+                time.sleep(0.5)
     
     def plug_init(self):
         """ (1.1 Plug Initialize Request) """
