@@ -35,14 +35,16 @@ function get_acc_values {
 }
 
 
-if [ s$LOG_ENABLED != "s0" ]; then
-    MIN=`date +%M`
-    if [ $MIN == 00 ]; then
-        get_acc_values
-    fi
-fi
+CUR_HOUR="n"
 
 while true; do
+    NOW_HOUR=`date +%Y%m%d%H`
+    if [ x$NOW_HOUR != x$CUR_HOUR ]; then
+        CUR_HOUR=$NOW_HOUR
+        if [ s$LOG_ENABLED != "s0" ]; then
+            get_acc_values
+        fi
+    fi
     get_current_values
     sleep 4
 done

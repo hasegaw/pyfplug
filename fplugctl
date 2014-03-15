@@ -58,12 +58,16 @@ elif cmd[0] == 'settime':
 
 elif cmd[0] == 'get':
     if cmd[1].startswith('a'):
-        result = list(reversed(dev.get_acc_power()))
-        if len(cmd) > 2:
-            result = result[int(cmd[2])]
-            print result
+        power_list = dev.get_acc_power()
+        if power_list is None:
+            print "Nodata"
         else:
-            print ' '.join(str(v) for v in result)
+            result = list(reversed(dev.get_acc_power()))
+            if len(cmd) > 2:
+                result = result[int(cmd[2])]
+                print result
+            else:
+                print ' '.join(str(v) for v in result)
     else:
         print ' '.join(
             map(
