@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+fplugctl - F-Plug Daemon
+
+Copyright (C) 2014 SUNAGA Takahiro
+
+This software is released under the MIT License.
+http://opensource.org/licenses/mit-license.php
+
+"""
+
+import sys
+import os, os.path
+import datetime, time
+
+from pyfplug import *
+
+DEFAULT_DEVICE = "/dev/rfcomm0"
+
+
+if len(sys.argv) == 1 or sys.argv[1] == '-h' or sys.argv[1] == '--help':
+    print """fplugctl - F-Plug Command line tool
+Usage: 
+    fplugctl [-d /dev/rfcommX] data-dir
+    """
+    sys.exit(1)
+
+
+if sys.argv[1] == '-d':
+    dev_fn = sys.argv[2]
+    cmd = sys.argv[3:]
+else:
+    dev_fn = DEFAULT_DEVICE
+    cmd = sys.argv[1:]
+
+dev = FPlugDevice(dev_fn, debug = False, timeout = 15)
+
+datadir = cmd[0]
+def get_cur():
+    dev.led_on()
+    data = "TMP={0}\nHUM={1}\nILL={2}\nPWR={3}\n".format(
+        dev.get_temperature(),
+        dev.get_humidity(),
+        dev.get_illuminance(),
+        dev.get_power_realtime()
+    )
+    with open(os.path.join(datadir, 'current-values.txt'), "w") as f:
+        f.write(data)
+    dev.led_off()
+
+def get_acc():
+    dev.led_on()
+    power_list = dev.get_acc_power()
+    if power_list is None:
+        power_list = [None]
+    data = ','.join(str(v) for v in list(reversed(power_list)))
+    
+    now = datetime.datetime.now()
+    fn = 'data-{0:%Y-%m}.log'.format(now)
+    line = ('{0:%d,%H,%H:%M:%S,}'.format(now)) + data + "\n"
+    with open(os.path.join(datadir, fn), 'a') as f:
+        f.write(line)
+    dev.led_off()
+
+def get_hour():
+    return "%Y%m%d%H".format(datetime.datetime.now())
+
+cur_hour = ""
+
+while True:
+    now_hour = get_hour()
+    if now_hour != cur_hour:
+        cur_hour = now_hour
+        get_acc()
+    get_cur()
+    time.sleep(10)
+

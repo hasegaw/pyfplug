@@ -77,6 +77,8 @@ class FPlugDevice:
             if self.debug:
                 print "READ thru:", hexdump_str(thrustr)
             if len(thrustr) < nthru:
+                if self.debug:
+                    print "Cannot read thru data"
                 return None
         rstr = self.sfile.read(nmax)
         if self.debug:
@@ -129,6 +131,8 @@ class FPlugDevice:
                 if ntry <= 0:
                     raise e
                 ntry -= 1
+                if self.debug:
+                    print "Retry send:", ntry 
                 time.sleep(0.5)
 
     def plug_init(self):

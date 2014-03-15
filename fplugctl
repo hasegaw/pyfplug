@@ -43,7 +43,7 @@ else:
     dev_fn = DEFAULT_DEVICE
     cmd = sys.argv[1:]
     
-dev = FPlugDevice(dev_fn, debug = False)
+dev = FPlugDevice(dev_fn, debug = False, timeout = 15)
 
 if cmd[0] == 'init':
     dev.plug_init()
@@ -69,6 +69,7 @@ elif cmd[0] == 'get':
             else:
                 print ' '.join(str(v) for v in result)
     else:
+        dev.led_on()
         print ' '.join(
             map(
                 lambda key: str((
@@ -81,4 +82,5 @@ elif cmd[0] == 'get':
                 cmd[1:]
             )
         )
+        dev.led_off()
     
