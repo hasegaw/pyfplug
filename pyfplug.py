@@ -35,10 +35,11 @@ def struct_num_values(fmt):
     sz = calcsize(fmt)
     return len(unpack(fmt, "\0" * sz))
 
+COMM_WAIT_DEFAULT = 0.1
 
 class FPlugDevice:
     
-    def __init__(self, port, timeout = 10, debug = False, ntry = 4, retry_wait = 2):
+    def __init__(self, port, timeout = 10, debug = False, ntry = 4, retry_wait = 2, comm_wait = COMM_WAIT_DEFAULT):
         assert 0 < ntry < 10
         self.port = port
         
@@ -55,32 +56,54 @@ class FPlugDevice:
             
         self.tid = 100
         self.debug = debug
-        self.sfile.sendBreak(1.0)
+        self.comm_wait_dur = comm_wait
+    
+    
+    def set_comm_wait(self, comm_wait):
+        self.comm_wait_dur = comm_wait
+    
+    def close(self):
+        self.sfile.close()
+        self.sfile = None
+        self.port = None
+    
+    def _sfile_read(self, *params):
+        time.sleep(self.comm_wait_dur)
+        return self.sfile.read(*params)
 
+    def _sfile_write(self, *params):
+        time.sleep(self.comm_wait_dur)
+        return self.sfile.write(*params)
 
-    def ensure_done(self):
-        if not self.debug:
+    def _sfile_set_timeout(self, timeout):
+        self.sfile.timeout = timeout
+
+    def clear_recv(self, timeout):
+        self.ensure_done(timeout)
+
+    def ensure_done(self, timeout = None):
+        if not timeout and not self.debug:
             return
         current_timeout = self.sfile.timeout
         try:
             self.sfile.timeout = 1
-            remain = self.sfile.read(1024)
+            remain = self._sfile_read(1024)
             if remain:
                 print "!! BUFFER REMAIN !!:", hexdump_str(remain)
             
         finally:
-            self.sfile.timeout = current_timeout
+            self._sfile_set_timeout(current_timeout)
 
     def read(self, nmax, nthru = 0):
         if nthru:
-            thrustr = self.sfile.read(nthru)
+            thrustr = self._sfile_read(nthru)
             if self.debug:
                 print "READ thru:", hexdump_str(thrustr)
             if len(thrustr) < nthru:
                 if self.debug:
                     print "Cannot read thru data"
                 return None
-        rstr = self.sfile.read(nmax)
+        rstr = self._sfile_read(nmax)
         if self.debug:
             print "READ:", hexdump_str(rstr)
         return rstr
@@ -125,6 +148,7 @@ class FPlugDevice:
         ntry = 20
         while True:
             try:
+                # self.sfile.sendBreak(1.0)
                 self.sfile.write(sending_data)
                 break
             except serial.serialutil.SerialException, e:
@@ -176,12 +200,14 @@ class FPlugDevice:
         esv = self.read_byte(10)
         if esv == 0x72:
             _opc, _epc1, _pdc1, value = self.read_format('BBB' + value_format)
-            if remain_size: self.sfile.read(remain_size)
+            if remain_size:
+                self._sfile_read(remain_size)
             self.ensure_done()
             return value
         elif esv == 0x52:
             self.read(3)
-            if remain_size: self.sfile.read(remain_size)
+            if remain_size:
+                self._sfile_read(remain_size)
             self.ensure_done()
             return None
         else:
@@ -325,6 +351,7 @@ class FPlugDevice:
             raise UnknownState()
     
     def clear(self):
+        self.comm_wait()
         self.sfile.flush()
 
 def test_fplug_dev():

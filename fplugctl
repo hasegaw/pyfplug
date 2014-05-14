@@ -11,7 +11,7 @@ http://opensource.org/licenses/mit-license.php
 
 """
 
-import sys
+import sys, os
 from pyfplug import *
 
 DEFAULT_DEVICE = "/dev/rfcomm0"
@@ -42,8 +42,11 @@ if sys.argv[1] == '-d':
 else:
     dev_fn = DEFAULT_DEVICE
     cmd = sys.argv[1:]
-    
-dev = FPlugDevice(dev_fn, debug = False, timeout = 15)
+
+if os.environ.get('FPLUG_DEBUG', False): 
+    dev = FPlugDevice(dev_fn, debug = True, timeout = 20)
+else:
+    dev = FPlugDevice(dev_fn, debug = False, timeout = 15)
 
 if cmd[0] == 'init':
     dev.plug_init()

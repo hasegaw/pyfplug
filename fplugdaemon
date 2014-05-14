@@ -14,6 +14,7 @@ http://opensource.org/licenses/mit-license.php
 import sys
 import os, os.path
 import datetime, time
+import traceback
 
 from pyfplug import *
 
@@ -35,23 +36,22 @@ else:
     dev_fn = DEFAULT_DEVICE
     cmd = sys.argv[1:]
 
-dev = FPlugDevice(dev_fn, debug = False, timeout = 15)
 
 datadir = cmd[0]
+curfn = cmd[1]
+
 def get_cur():
-    dev.led_on()
     data = "TMP={0}\nHUM={1}\nILL={2}\nPWR={3}\n".format(
         dev.get_temperature(),
         dev.get_humidity(),
         dev.get_illuminance(),
         dev.get_power_realtime()
     )
-    with open(os.path.join(datadir, 'current-values.txt'), "w") as f:
+    print "CUR DATA: ", ' '.join(data.split("\n"))
+    with open(curfn, "w") as f:
         f.write(data)
-    dev.led_off()
 
 def get_acc():
-    dev.led_on()
     power_list = dev.get_acc_power()
     if power_list is None:
         power_list = [None]
@@ -62,18 +62,58 @@ def get_acc():
     line = ('{0:%d,%H,%H:%M:%S,}'.format(now)) + data + "\n"
     with open(os.path.join(datadir, fn), 'a') as f:
         f.write(line)
-    dev.led_off()
 
 def get_hour():
-    return "%Y%m%d%H".format(datetime.datetime.now())
+    return "{0:%Y%m%d%H}".format(datetime.datetime.now())
+
+
+dev = None
+dev_init_time = None
+def init_dev():
+    global dev
+    global dev_init_time
+    dev_init_time = datetime.datetime.now()
+    if dev:
+        dev.close()
+    dev = FPlugDevice(dev_fn, debug = False, timeout = 15, comm_wait = 0.05)
+
 
 cur_hour = ""
 
+
+def close_dev():
+    global dev
+    print "Device closed"
+    if dev:
+        dev.close()
+        dev = None
+    
+
 while True:
-    now_hour = get_hour()
-    if now_hour != cur_hour:
-        cur_hour = now_hour
-        get_acc()
-    get_cur()
-    time.sleep(10)
+    try:
+        if dev:
+            init_delta = datetime.datetime.now() - dev_init_time
+            if init_delta > datetime.timedelta(seconds = 60 * 60 * 6):
+                close_dev()
+
+        if not dev:
+            print "Device Initialized"
+            init_dev()
+        
+        if dev:
+            now_hour = get_hour()
+            dev.clear_recv(timeout = 1)
+            dev.led_on()
+            if now_hour != cur_hour:
+                get_acc()
+                cur_hour = now_hour
+                print "UPDATE HOUR: NOW", now_hour, " CUR:", cur_hour
+            get_cur()
+            time.sleep(1)
+            dev.led_off()
+    except Exception, e:
+        print "EXCEPTION:"
+        traceback.print_exc()
+        close_dev()
+    time.sleep(1)
 
