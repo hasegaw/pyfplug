@@ -36,7 +36,6 @@ else:
     dev_fn = DEFAULT_DEVICE
     cmd = sys.argv[1:]
 
-
 datadir = cmd[0]
 curfn = cmd[1]
 
